@@ -91,7 +91,7 @@ namespace Carrito.Helpers
                 model.Username,
                 model.Password,
                 model.RememberMe,
-                false);//Todo: Cambiar a True en Produccion ....para bloqueo en el 3er reintento de Logueo
+                true);//Todo: Cambiar a True en Produccion ....para bloqueo en el 3er reintento de Logueo
         }
 
         public async Task LogoutAsync()
@@ -118,6 +118,25 @@ namespace Carrito.Helpers
                 .FirstOrDefaultAsync(u => u.Id == userId.ToString());
         }
 
+        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token)
+        {
+            return await _userManager.ConfirmEmailAsync(user, token);
+        }
+
+        public async Task<string> GenerateEmailConfirmationTokenAsync(User user)
+        {
+            return await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        }
+
+        public async Task<string> GeneratePasswordResetTokenAsync(User user)
+        {
+            return await _userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string password)
+        {
+            return await _userManager.ResetPasswordAsync(user, token, password);
+        }
 
     }
 
