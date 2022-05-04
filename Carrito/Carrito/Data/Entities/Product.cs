@@ -44,5 +44,6 @@ namespace Carrito.Data.Entities
             ? $"https://localhost:7182/images/noimage.png"
             : ProductImages.FirstOrDefault().ImageFullPath;
 
+        public ICollection<SaleDetail> SaleDetails { get; set; }
     }
 }
