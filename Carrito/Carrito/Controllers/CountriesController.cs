@@ -1,15 +1,11 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Carrito.Data;
 using Carrito.Data.Entities;
 using Carrito.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 
 namespace Carrito.Controllers
 {
@@ -17,17 +13,19 @@ namespace Carrito.Controllers
     public class CountriesController : Controller
     {
         private readonly DataContext _context;
+        private readonly IFlashMessage _flashMessage;
 
-        public CountriesController(DataContext context)
+        public CountriesController(DataContext context, IFlashMessage flashMessage)
         {
             _context = context;
+            _flashMessage = flashMessage;
         }
 
         // GET: Countries
         public async Task<IActionResult> Index()
         {
             return View(await _context.Countries
-                                      .Include(c => c.States)  
+                                      .Include(c => c.States)
                                       .ToListAsync());
         }
 
@@ -39,7 +37,7 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            var country = await _context.Countries
+            Country country = await _context.Countries
                 .Include(c => c.States)
                 .ThenInclude(s => s.Cities)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -51,7 +49,7 @@ namespace Carrito.Controllers
             return View(country);
         }
 
-        
+
         public async Task<IActionResult> DetailsState(int? id)
         {
             if (id == null)
@@ -59,7 +57,7 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            State  state = await _context.States
+            State state = await _context.States
                 .Include(s => s.Country)
                 .Include(s => s.Cities)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -91,7 +89,7 @@ namespace Carrito.Controllers
         // GET: Countries/Create
         public IActionResult Create()
         {
-            Country country = new() { States = new List<State>()};    
+            Country country = new() { States = new List<State>() };
             return View(country);
         }
 
@@ -112,16 +110,16 @@ namespace Carrito.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe un país con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(country);
@@ -134,7 +132,7 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            Country country= await _context.Countries.FindAsync(id);
+            Country country = await _context.Countries.FindAsync(id);
             if (country == null)
             {
                 return NotFound();
@@ -154,10 +152,10 @@ namespace Carrito.Controllers
         {
             if (ModelState.IsValid)
             {
-             try
+                try
                 {
                     State state = new()
-                    { 
+                    {
                         Cities = new List<City>(),
                         Country = await _context.Countries.FindAsync(model.CountryId),
                         Name = model.Name,
@@ -165,23 +163,23 @@ namespace Carrito.Controllers
 
                     _context.Add(state);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Details), new { Id = model.CountryId});
+                    return RedirectToAction(nameof(Details), new { Id = model.CountryId });
 
                 }
                 catch (DbUpdateException dbUpdateException)
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe una provincia con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe una provincia con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(model);
@@ -232,16 +230,16 @@ namespace Carrito.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe una ciudad con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe una ciudad con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(model);
@@ -256,9 +254,9 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            var country = await _context.Countries
+            Country country = await _context.Countries
                                         .Include(c => c.States)
-                                        .FirstOrDefaultAsync(c=> c.Id == id);
+                                        .FirstOrDefaultAsync(c => c.Id == id);
             if (country == null)
             {
                 return NotFound();
@@ -288,16 +286,16 @@ namespace Carrito.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe un país con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(country);
@@ -312,7 +310,7 @@ namespace Carrito.Controllers
 
             State state = await _context.States
                                         .Include(s => s.Country)
-                                        .FirstOrDefaultAsync(s => s.Id ==id);
+                                        .FirstOrDefaultAsync(s => s.Id == id);
             if (state == null)
             {
                 return NotFound();
@@ -350,22 +348,22 @@ namespace Carrito.Controllers
                     };
                     _context.Update(state);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Details), new {Id = model.CountryId} );
+                    return RedirectToAction(nameof(Details), new { Id = model.CountryId });
                 }
                 catch (DbUpdateException dbUpdateException)
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe una provincia con el mismo nombre en este país.");
+                        _flashMessage.Danger("Ya existe una provincia con el mismo nombre en este país.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(model);
@@ -424,16 +422,16 @@ namespace Carrito.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un departamento con el mismo nombre en esta provincia.");
+                        _flashMessage.Danger("Ya existe un departamento con el mismo nombre en esta provincia.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(model);
@@ -446,8 +444,8 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            var country = await _context.Countries
-                                        .Include(c => c.States )
+            Country country = await _context.Countries
+                                        .Include(c => c.States)
                                         .FirstOrDefaultAsync(c => c.Id == id);
             if (country == null)
             {
@@ -462,7 +460,7 @@ namespace Carrito.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var country = await _context.Countries.FindAsync(id);
+            Country country = await _context.Countries.FindAsync(id);
             _context.Countries.Remove(country);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -496,7 +494,7 @@ namespace Carrito.Controllers
                                         .FirstOrDefaultAsync(s => s.Id == id);
             _context.States.Remove(state);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Details), new {Id = state.Country.Id});
+            return RedirectToAction(nameof(Details), new { Id = state.Country.Id });
         }
 
 
@@ -507,7 +505,7 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            City city= await _context.Cities
+            City city = await _context.Cities
                                         .Include(c => c.State)
                                         .FirstOrDefaultAsync(c => c.Id == id);
             if (city == null)

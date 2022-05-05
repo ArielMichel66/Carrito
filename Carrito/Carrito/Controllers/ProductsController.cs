@@ -5,6 +5,7 @@ using Carrito.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 
 namespace Carrito.Controllers
 {
@@ -14,12 +15,14 @@ namespace Carrito.Controllers
         private readonly DataContext _context;
         private readonly ICombosHelper _combosHelper;
         private readonly IBlobHelper _blobHelper;
+        private readonly IFlashMessage _flashMessage;
 
-        public ProductsController(DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper)
+        public ProductsController(DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper, IFlashMessage flashMessage)
         {
             _context = context;
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
+            _flashMessage = flashMessage;
         }
 
         public async Task<IActionResult> Index()
@@ -87,16 +90,16 @@ namespace Carrito.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un producto con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe un producto con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
 
@@ -153,16 +156,16 @@ namespace Carrito.Controllers
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un producto con el mismo nombre.");
+                    _flashMessage.Danger("Ya existe un producto con el mismo nombre.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
 
             return View(model);
@@ -232,7 +235,7 @@ namespace Carrito.Controllers
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
 
@@ -273,7 +276,7 @@ namespace Carrito.Controllers
                                     .ThenInclude(pc => pc.Category)
                                     .FirstOrDefaultAsync(p => p.Id == id);
 
-           if (product == null)
+            if (product == null)
             {
                 return NotFound();
             }
@@ -322,10 +325,10 @@ namespace Carrito.Controllers
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
-    
+
             List<Category> categories = product.ProductCategories.Select(pc => new Category
             {
                 Id = pc.Category.Id,
@@ -387,7 +390,7 @@ namespace Carrito.Controllers
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
-            
+
             foreach (ProductImage productImage in product.ProductImages)
             {
                 await _blobHelper.DeleteBlobAsync(productImage.ImageId, "products");

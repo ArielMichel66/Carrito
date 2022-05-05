@@ -7,6 +7,7 @@ using Carrito.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 
 namespace Carrito.Controllers
 {
@@ -18,14 +19,17 @@ namespace Carrito.Controllers
         private readonly ICombosHelper _combosHelper;
         private readonly IBlobHelper _blobHelper;
         private readonly IMailHelper _mailHelper;
+        private readonly IFlashMessage _flashMessage;
 
-        public UsersController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper, IMailHelper mailHelper)
+        public UsersController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper, IMailHelper mailHelper
+            , IFlashMessage flashMessage)
         {
             _userHelper = userHelper;
             _context = context;
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
             _mailHelper = mailHelper;
+            _flashMessage = flashMessage;
         }
 
         public async Task<IActionResult> Index()
@@ -68,7 +72,7 @@ namespace Carrito.Controllers
                 User user = await _userHelper.AddUserAsync(model);
                 if (user == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Este correo ya está siendo usado.");
+                    _flashMessage.Danger("Este correo ya está siendo usado.");
                     model.Countries = await _combosHelper.GetComboCountriesAsync();
                     model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);
                     model.Cities = await _combosHelper.GetComboCitiesAsync(model.StateId);
@@ -91,11 +95,11 @@ namespace Carrito.Controllers
                         $"<hr/><br/><p><a href = \"{tokenLink}\">Confirmar Email</a></p>");
                 if (response.IsSuccess)
                 {
-                    ViewBag.Message = "Las instrucciones para habilitar el administrador han sido enviadas al correo.";
+                    _flashMessage.Info("Las instrucciones para habilitar el administrador han sido enviadas al correo.");
                     return View(model);
                 }
 
-                ModelState.AddModelError(string.Empty, response.Message);
+                _flashMessage.Danger(response.Message);
             }
             model.Countries = await _combosHelper.GetComboCountriesAsync();
             model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);

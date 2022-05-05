@@ -3,6 +3,7 @@ using Carrito.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 
 namespace Carrito.Controllers
 {
@@ -10,10 +11,12 @@ namespace Carrito.Controllers
     public class CategoriesController : Controller
     {
         private readonly DataContext _context;
+        private readonly IFlashMessage _flashMessage;
 
-        public CategoriesController(DataContext context)
+        public CategoriesController(DataContext context, IFlashMessage flashMessage)
         {
             _context = context;
+            _flashMessage = flashMessage;
         }
 
         public async Task<IActionResult> Index()
@@ -28,7 +31,7 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories
+            Category category = await _context.Categories
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (category == null)
             {
@@ -60,16 +63,16 @@ namespace Carrito.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe una Categoria con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe una Categoria con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(category);
@@ -83,7 +86,7 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories.FindAsync(id);
+            Category category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
                 return NotFound();
@@ -113,16 +116,16 @@ namespace Carrito.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe una categoria con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe una categoria con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(category);
@@ -135,7 +138,7 @@ namespace Carrito.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories.FindAsync(id);
+            Category category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
                 return NotFound();
@@ -149,7 +152,7 @@ namespace Carrito.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            Category category = await _context.Categories.FindAsync(id);
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

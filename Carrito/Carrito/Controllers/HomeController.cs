@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using Vereyon.Web;
 
 namespace Carrito.Controllers
 {
@@ -16,13 +17,16 @@ namespace Carrito.Controllers
         private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
         private readonly IOrdersHelper _ordersHelper;
+        private readonly IFlashMessage _flashMessage;
 
-        public HomeController(ILogger<HomeController> logger, DataContext context, IUserHelper userHelper, IOrdersHelper ordersHelper)
+        public HomeController(ILogger<HomeController> logger, DataContext context, IUserHelper userHelper, IOrdersHelper ordersHelper
+            , IFlashMessage flashMessage)
         {
             _logger = logger;
             _context = context;
             _userHelper = userHelper;
             _ordersHelper = ordersHelper;
+            _flashMessage = flashMessage;
         }
 
         public async Task<IActionResult> Index()
@@ -227,7 +231,7 @@ namespace Carrito.Controllers
                 return RedirectToAction(nameof(OrderSuccess));
             }
 
-            ModelState.AddModelError(string.Empty, response.Message);
+            _flashMessage.Danger(response.Message);
             return View(model);
         }
 
@@ -338,7 +342,7 @@ namespace Carrito.Controllers
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                     return View(model);
                 }
 
