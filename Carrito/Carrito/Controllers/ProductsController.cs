@@ -357,6 +357,7 @@ namespace Carrito.Controllers
 
             _context.ProductCategories.Remove(productCategory);
             await _context.SaveChangesAsync();
+            _flashMessage.Info("Registro borrado.");
             return RedirectToAction(nameof(Details), new { Id = productCategory.Product.Id });
         }
 
@@ -396,7 +397,7 @@ namespace Carrito.Controllers
                 await _blobHelper.DeleteBlobAsync(productImage.ImageId, "products");
             }
 
-
+            _flashMessage.Info("Registro borrado.");
             return RedirectToAction(nameof(Index));
         }
 

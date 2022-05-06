@@ -463,6 +463,7 @@ namespace Carrito.Controllers
             Country country = await _context.Countries.FindAsync(id);
             _context.Countries.Remove(country);
             await _context.SaveChangesAsync();
+            _flashMessage.Info("Registro borrado.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -494,6 +495,7 @@ namespace Carrito.Controllers
                                         .FirstOrDefaultAsync(s => s.Id == id);
             _context.States.Remove(state);
             await _context.SaveChangesAsync();
+            _flashMessage.Info("Registro borrado.");
             return RedirectToAction(nameof(Details), new { Id = state.Country.Id });
         }
 
@@ -526,6 +528,7 @@ namespace Carrito.Controllers
                             .FirstOrDefaultAsync(c => c.Id == id);
             _context.Cities.Remove(city);
             await _context.SaveChangesAsync();
+            _flashMessage.Info("Registro borrado.");
             return RedirectToAction(nameof(DetailsState), new { Id = city.State.Id });
         }
     }
