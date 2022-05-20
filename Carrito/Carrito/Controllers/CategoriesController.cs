@@ -28,22 +28,22 @@ namespace Carrito.Controllers
                                 .ToListAsync());
         }
 
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        //public async Task<IActionResult> Details(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            Category category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
+        //    Category category = await _context.Categories
+        //        .FirstOrDefaultAsync(m => m.Id == id);
+        //    if (category == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return View(category);
-        }
+        //    return View(category);
+        //}
 
         //public IActionResult Create()
         //{
